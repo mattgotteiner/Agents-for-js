@@ -114,8 +114,9 @@ export class MsalTokenProvider implements AuthProvider {
       type: 'pkcs8'
     })
 
-    const pubKeyObject = new crypto.X509Certificate(fs.readFileSync(authConfig.certPemFile as string))
-
+    const certSource = fs.readFileSync(authConfig.certPemFile as string)
+    const pubKeyObject = new crypto.X509Certificate(certSource)
+    const certText = pubKeyObject.toString()
     const cca = new ConfidentialClientApplication({
       auth: {
         clientId: authConfig.clientId || '',
@@ -123,7 +124,7 @@ export class MsalTokenProvider implements AuthProvider {
         clientCertificate: {
           privateKey: privateKey as string,
           thumbprint: pubKeyObject.fingerprint.replaceAll(':', ''),
-          x5c: Buffer.from(authConfig.certPemFile as string, 'base64').toString()
+          x5c: certText
         }
       },
       system: this.sysOptions
